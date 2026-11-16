@@ -1,0 +1,7 @@
+test_pfb: M=800 T=32 (separate path)
+  all bins vs fp64 model                   PASS (rel RMS err 1.57e-07, max abs err 0.042 of RMS 5.42e+04, 405812 values, 0 nonfinite)
+  every third bin, strided vs fp64 model   PASS (rel RMS err 1.57e-07, max abs err 0.042 of RMS 5.44e+04, 135608 values, 0 nonfinite)
+  other elements left untouched            PASS (0 values written)
+  bad arguments throw invalid_argument     PASS
+  golden output                            PASS (max abs err 2.4e-07)
+TEST PASSED

@@ -1,0 +1,16 @@
+date:        2026-11-15T23:10:54-08:00
+commit:      dbc6686
+host:        Linux 6.5.0-18-generic x86_64
+cpu:         INTEL(R) XEON(R) SILVER 4510
+nvcc:        /usr/bin/nvcc, release 11.5, V11.5.119
+host cxx:    g++-10 (Ubuntu 10.5.0-1ubuntu1~22.04.3) 10.5.0
+cmake:       cmake version 3.22.1
+cmake args:  -DCMAKE_CUDA_COMPILER=/usr/bin/nvcc -DCMAKE_CUDA_HOST_COMPILER=g++-10
+
+GPU 0:
+name, driver_version, memory.total [MiB], power.limit [W], power.default_limit [W], clocks.max.sm [MHz], clocks.max.memory [MHz], pcie.link.gen.max, pcie.link.width.max, pcie.link.width.current, persistence_mode
+NVIDIA RTX A2000 12GB, 580.178.04, 12282 MiB, 70.00 W, 70.00 W, 2100 MHz, 6001 MHz, 4, 16, 16, Disabled
+(the current PCIe generation drops when the GPU is idle, so the maximum is given)
+
+Other processes using the GPU at the start (they make the timings slower):
+pid, process_name, used_gpu_memory [MiB]

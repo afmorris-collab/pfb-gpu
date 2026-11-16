@@ -1,0 +1,9 @@
+PFB M=64 T=32 (fused), 3 digitizer cards x 4 ADC channels at 80 Msps = 0.96 Gsps
+PCIe gen 4 x16: nominal 31.5 GB/s each way; percentages are of that
+
+Q=250000 rows per batch = 100 ms of signal
+  filter bank vs fp64 model                PASS (rel RMS err 1.31e-07, max abs err 0.00737 of RMS 1.51e+04, 33660 values, 0 nonfinite)
+   33 bins, serial:        43.13 ms ->  2.23 Gsps for 12 ADC channels, PCIe in  4.45 GB/s (14.1%), out 18.36 GB/s (58.3%) | output OK
+   33 bins, overlapped:    35.79 ms ->  2.68 Gsps for 12 ADC channels, PCIe in  5.37 GB/s (17.0%), out 22.13 GB/s (70.2%) | output OK
+    8 bins, serial:        20.05 ms ->  4.79 Gsps for 12 ADC channels, PCIe in  9.58 GB/s (30.4%), out  9.58 GB/s (30.4%) | output OK
+    8 bins, overlapped:    12.69 ms ->  7.57 Gsps for 12 ADC channels, PCIe in 15.14 GB/s (48.0%), out 15.13 GB/s (48.0%) | output OK

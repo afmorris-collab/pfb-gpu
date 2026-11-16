@@ -1,0 +1,22 @@
+NVIDIA RTX A2000 12GB, nominal DRAM bandwidth 288 GB/s
+PFB kernels only (no PCIe), T=32, 100 ms batches; 3 digitizer cards x 4 ADC channels
+DRAM GB/s = minimum DRAM traffic / time
+
+M=   8 fused       6.548 ms/card ->   4.89 Gsps for 12 ADC channels, DRAM  58.6 GB/s = 20.4% of nominal | vs fp64 model: PASS (rel RMS 1.1e-07)
+M=   8 separate   12.111 ms/card ->   2.64 Gsps for 12 ADC channels, DRAM  74.0 GB/s = 25.7% of nominal | vs fp64 model: PASS (rel RMS 7.8e-08)
+M=  16 fused       3.737 ms/card ->   8.56 Gsps for 12 ADC channels, DRAM  94.2 GB/s = 32.7% of nominal | vs fp64 model: PASS (rel RMS 1.2e-07)
+M=  16 separate    7.607 ms/card ->   4.21 Gsps for 12 ADC channels, DRAM 113.6 GB/s = 39.4% of nominal | vs fp64 model: PASS (rel RMS 9.9e-08)
+M=  32 fused       2.225 ms/card ->  14.38 Gsps for 12 ADC channels, DRAM 151.0 GB/s = 52.4% of nominal | vs fp64 model: PASS (rel RMS 1.3e-07)
+M=  32 separate    5.779 ms/card ->   5.54 Gsps for 12 ADC channels, DRAM 146.7 GB/s = 50.9% of nominal | vs fp64 model: PASS (rel RMS 1.5e-07)
+M=  50 fused       1.928 ms/card ->  16.60 Gsps for 12 ADC channels, DRAM 171.3 GB/s = 59.5% of nominal | vs fp64 model: PASS (rel RMS 1.3e-07)
+M=  50 separate    4.428 ms/card ->   7.23 Gsps for 12 ADC channels, DRAM 190.2 GB/s = 66.0% of nominal | vs fp64 model: PASS (rel RMS 1.4e-07)
+M=  64 fused       1.547 ms/card ->  20.68 Gsps for 12 ADC channels, DRAM 212.0 GB/s = 73.6% of nominal | vs fp64 model: PASS (rel RMS 1.3e-07)
+M=  64 separate    4.913 ms/card ->   6.51 Gsps for 12 ADC channels, DRAM 171.0 GB/s = 59.4% of nominal | vs fp64 model: PASS (rel RMS 1.4e-07)
+M=  80 separate    4.657 ms/card ->   6.87 Gsps for 12 ADC channels, DRAM 180.0 GB/s = 62.5% of nominal | vs fp64 model: PASS (rel RMS 1.6e-07)
+M= 128 separate    4.944 ms/card ->   6.47 Gsps for 12 ADC channels, DRAM 169.1 GB/s = 58.7% of nominal | vs fp64 model: PASS (rel RMS 1.8e-07)
+M= 256 separate    4.248 ms/card ->   7.53 Gsps for 12 ADC channels, DRAM 196.3 GB/s = 68.1% of nominal | vs fp64 model: PASS (rel RMS 2.0e-07)
+M= 400 separate    5.758 ms/card ->   5.56 Gsps for 12 ADC channels, DRAM 144.7 GB/s = 50.2% of nominal | vs fp64 model: PASS (rel RMS 1.8e-07)
+M= 500 separate    8.434 ms/card ->   3.79 Gsps for 12 ADC channels, DRAM  98.8 GB/s = 34.3% of nominal | vs fp64 model: PASS (rel RMS 1.7e-07)
+M= 512 separate    4.275 ms/card ->   7.48 Gsps for 12 ADC channels, DRAM 194.8 GB/s = 67.6% of nominal | vs fp64 model: PASS (rel RMS 1.8e-07)
+M= 800 separate    6.409 ms/card ->   4.99 Gsps for 12 ADC channels, DRAM 130.0 GB/s = 45.1% of nominal | vs fp64 model: PASS (rel RMS 1.9e-07)
+M=1024 separate    4.330 ms/card ->   7.38 Gsps for 12 ADC channels, DRAM 192.0 GB/s = 66.7% of nominal | vs fp64 model: PASS (rel RMS 3.0e-07)

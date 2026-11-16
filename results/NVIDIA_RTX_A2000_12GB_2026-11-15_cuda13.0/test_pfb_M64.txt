@@ -1,0 +1,7 @@
+test_pfb: M=64 T=32 (fused path)
+  all bins vs fp64 model                   PASS (rel RMS err 1.32e-07, max abs err 0.00884 of RMS 1.51e+04, 33396 values, 0 nonfinite)
+  every third bin, strided vs fp64 model   PASS (rel RMS err 1.31e-07, max abs err 0.00703 of RMS 1.51e+04, 11132 values, 0 nonfinite)
+  other elements left untouched            PASS (0 values written)
+  bad arguments throw invalid_argument     PASS
+  golden output                            PASS (max abs err 0)
+TEST PASSED
