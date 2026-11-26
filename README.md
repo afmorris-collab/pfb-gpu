@@ -239,7 +239,8 @@ bounds it:
 
 - `benchmarkpfb`: kernels only (data already on the GPU), T=32, 100 ms batches, M from 8 to 1024.
 - `benchmarkpfbio`: end to end through `Channelizer`, including PCIe copies, at the build's M
-  and T; all bins or a quarter of them copied back, digitizer cards serial or overlapped on streams.
+  and T; all bins or a quarter of them copied back, digitizer cards serial, overlapped on streams,
+  or pipelined (double buffered, batches back to back: the sustained rate of a continuous stream).
 
 ### Reproducing
 

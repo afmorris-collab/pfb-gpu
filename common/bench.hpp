@@ -3,6 +3,7 @@
 #pragma once
 
 #include <algorithm>
+#include <cmath>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
@@ -26,8 +27,18 @@ inline int BatchRows(int M, double seconds = 100e-3) { return (int)(seconds * AD
 // Signal time in a batch of Q rows, and the throughput when all NCARDS digitizer cards take t_ms.
 inline double SignalMs(int Q, int M) { return 1e3 * Q * (M / 2) / ADC_RATE; }
 inline double Gsps(double t_ms, int Q, int M) { return (double)Q * (M / 2) * NCH / t_ms / 1e6; }
+inline double BatchMs(double gsps, int Q, int M) { return (double)Q * (M / 2) * NCH / gsps / 1e6; }  // inverse
 
-inline float Median(std::vector<float> v) { std::sort(v.begin(), v.end()); return v[v.size() / 2]; }
+// Mean and sample standard deviation of per-trial throughputs.
+struct MeanSd { double mean, sd; };
+inline MeanSd Stats(const std::vector<double>& v)
+{
+    double mean = 0, ss = 0;
+    for (double x : v) mean += x;
+    mean /= v.size();
+    for (double x : v) ss += (x - mean) * (x - mean);
+    return {mean, v.size() > 1 ? std::sqrt(ss / (v.size() - 1)) : 0.0};
+}
 
 // Random offset-binary samples, and random taps (T*M) with the filter gain kept near 1. Fixed
 // seeds and raw std::mt19937 output (whose sequence the C++ standard specifies, unlike the

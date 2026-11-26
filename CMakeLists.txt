@@ -101,7 +101,7 @@ target_link_libraries(pfb_response PRIVATE pfb)
 
 # ---- Benchmarks ----
 # benchmarkpfb: kernels only (no PCIe), T=32, M sweep, fused vs separate
-# benchmarkpfbio: end to end incl. PCIe through Channelizer, at the build's M and T
+# benchmarkpfbio: streaming incl. PCIe (double buffered), T=32, M sweep
 foreach(bench benchmarkpfb benchmarkpfbio)
     add_executable(${bench} bench/${bench}.cu)
     target_include_directories(${bench} PRIVATE common)

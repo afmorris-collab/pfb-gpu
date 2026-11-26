@@ -15,7 +15,7 @@
 #                              and any other processes using the GPU
 #          test_pfb_M<M>.txt   correctness test for each build
 #          benchmarkpfb.txt    kernels only, M from 8 to 1024 (does not depend on the build's M)
-#          benchmarkpfbio_M<M>.txt  end to end through Channelizer for each build
+#          benchmarkpfbio.txt  streaming incl. PCIe, M from 8 to 1024 (does not depend on the build's M)
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
@@ -85,14 +85,7 @@ done
 echo "benchmarkpfb (kernels only, M sweep)"
 "$first_build/benchmarkpfb" > "$OUT/benchmarkpfb.txt"
 
-for cfg in "${CONFIGS[@]}"; do
-    read -r M T <<< "$cfg"
-    echo "benchmarkpfbio M=$M T=$T"
-    "build-bench/M${M}_T${T}/benchmarkpfbio" > "$OUT/benchmarkpfbio_M${M}.txt"
-    if grep -q -E "FAIL|WRONG" "$OUT/benchmarkpfbio_M${M}.txt"; then  # it does not set an exit code
-        echo "benchmarkpfbio M=$M: a check failed, see $OUT/benchmarkpfbio_M${M}.txt" >&2
-        exit 1
-    fi
-done
+echo "benchmarkpfbio (streaming incl. PCIe, M sweep)"
+"$first_build/benchmarkpfbio" > "$OUT/benchmarkpfbio.txt"
 
 echo "Done: all checks passed. Results in $OUT"

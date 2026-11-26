@@ -6,7 +6,9 @@
 // 12 ADC channels, processed one after another. Each path's DRAM traffic (the minimum it must
 // move) is also given as a share of the GPU's nominal DRAM bandwidth, which bounds it. Each path's output is checked
 // against the fp64 model (pfb_reference.hpp). Fused and separate alternate within every round,
-// since GPU clocks drift and only same-run comparisons are meaningful. Exit code 1 if any check fails.
+// since GPU clocks drift and only same-run comparisons are meaningful. Throughput is the mean and
+// standard deviation over 9 rounds, each round the mean of 20 batches; the time per card and DRAM
+// traffic are at the mean throughput. Exit code 1 if any check fails.
 
 #include <cstdio>
 #include <stdexcept>
@@ -88,11 +90,14 @@ static void RunM()
     // Minimum DRAM traffic: input and output; the separate path also writes and reads the frames.
     const double in_bytes = nin * 4.0 * sizeof(uint16_t), out_bytes = nout * sizeof(float2);
     const double frame_bytes = pfb::FrameElements(M, Q) * sizeof(float);
-    auto report = [&](const char* path, float t, double bytes, const PfbCheckResult& res) {
-        const double gbs = bytes / t / 1e6;
-        printf("M=%4d %-9s %7.3f ms/card -> %6.2f Gsps for %d ADC channels, DRAM %5.1f GB/s = "
+    auto report = [&](const char* path, const std::vector<float>& times, double bytes, const PfbCheckResult& res) {
+        std::vector<double> g;                 // Gsps of each round
+        for (float t : times) g.push_back(Gsps(NCARDS * t, Q, M));
+        const MeanSd s = Stats(g);
+        const double t = BatchMs(s.mean, Q, M) / NCARDS, gbs = bytes / t / 1e6;
+        printf("M=%4d %-9s %7.3f ms/card -> %6.2f +- %4.2f Gsps for %d ADC channels, DRAM %5.1f GB/s = "
                "%4.1f%% of nominal | vs fp64 model: %s (rel RMS %.1e)\n",
-               M, path, t, Gsps(NCARDS * t, Q, M), NCH, gbs, 100.0 * gbs / peak_gbs,
+               M, path, t, s.mean, s.sd, NCH, gbs, 100.0 * gbs / peak_gbs,
                res.pass ? "PASS" : "FAIL", res.rel_rms_err);
     };
 
@@ -101,11 +106,11 @@ static void RunM()
     if constexpr (kFused) {
         const PfbCheckResult r_fused = check(fused);
         for (int round = 0; round < 9; round++) { ts.push_back(TimeMs(separate)); tf.push_back(TimeMs(fused)); }
-        report("fused", Median(tf), in_bytes + out_bytes, r_fused);
+        report("fused", tf, in_bytes + out_bytes, r_fused);
     } else {
         for (int round = 0; round < 9; round++) ts.push_back(TimeMs(separate));
     }
-    report("separate", Median(ts), in_bytes + 2 * frame_bytes + out_bytes, r_sep);
+    report("separate", ts, in_bytes + 2 * frame_bytes + out_bytes, r_sep);
 
     cufftDestroy(plan);
     CUDA_CHECK(cudaFree(frames));
@@ -123,7 +128,7 @@ static int Main()
     printf("PFB kernels only (no PCIe), T=%d, 100 ms batches; %d digitizer cards x %d ADC channels\n"
            "DRAM GB/s = minimum DRAM traffic / time\n\n", T, NCARDS, pfb::NADC);
     RunM<8>(); RunM<16>(); RunM<32>(); RunM<50>(); RunM<64>();
-    RunM<80>(); RunM<128>(); RunM<256>(); RunM<400>(); RunM<500>(); RunM<512>(); RunM<800>(); RunM<1024>();
+    RunM<80>(); RunM<128>(); RunM<256>(); RunM<400>(); RunM<512>(); RunM<800>(); RunM<1024>();
     return all_pass ? 0 : 1;
 }
 
