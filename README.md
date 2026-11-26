@@ -83,7 +83,7 @@ include/pfb/kaiser.hpp       pfb::KaiserTaps: Kaiser-windowed prototype filter (
 src/channelizer.cu           Channelizer implementation (library libpfb)
 tests/test_pfb.cpp           correctness test; tests/data/golden_M<M>_T<T>.bin (800/32, 64/32)
 tools/pfb_response.cpp       frequency response measurement, written to CSV (not a test)
-bench/                       benchmarkpfb (kernels only), benchmarkpfbio (end to end), run_all.sh
+bench/                       benchmarkpfb (kernels only), benchmarkpfbio (streaming), run_all.sh
 common/                      fp64 reference model, benchmark helpers (bench.hpp)
 ```
 
@@ -238,9 +238,11 @@ bounds it:
   31.5 GB/s).
 
 - `benchmarkpfb`: kernels only (data already on the GPU), T=32, 100 ms batches, M from 8 to 1024.
-- `benchmarkpfbio`: end to end through `Channelizer`, including PCIe copies, at the build's M
-  and T; all bins or a quarter of them copied back, digitizer cards serial, overlapped on streams,
-  or pipelined (double buffered, batches back to back: the sustained rate of a continuous stream).
+- `benchmarkpfbio`: streaming, including PCIe copies, T=32, 100 ms batches, the same M sweep.
+  Each digitizer card's batch goes through the steps of `Channelizer` (copy in, filter bank,
+  pitched copy of the selected bins back to pinned host memory) on its own CUDA stream, double
+  buffered with batches back to back: the sustained rate of a continuous stream. All bins, or a
+  quarter of them, copied back.
 
 ### Reproducing
 
@@ -252,7 +254,7 @@ CMAKE_ARGS="-DCMAKE_CUDA_HOST_COMPILER=g++-10" bench/run_all.sh             # CU
 ```
 
 The script builds M=800 and M=64 (both T=32) in `build-bench/` and runs `test_pfb` for each,
-`benchmarkpfb` once, and `benchmarkpfbio` for each. It saves every program's raw output, plus
+and `benchmarkpfb` and `benchmarkpfbio` once. It saves every program's raw output, plus
 `system.txt`, which records:
 
 - the GPU, driver, power limit, maximum clocks and PCIe link;
@@ -265,51 +267,68 @@ It stops if any correctness check fails. Use `CUDA_VISIBLE_DEVICES` to pick a GP
 ### Results
 
 RTX A2000 12GB (70 W power limit), CUDA 13.0 with gcc 12.3, driver 580.178.04, PCIe 4.0 x16, no
-other processes on the GPU; measured 2026-11-15 with `bench/run_all.sh`. The raw output and
+other processes on the GPU; measured 2026-11-25 with `bench/run_all.sh`. The raw output and
 machine details are in
-[results/NVIDIA_RTX_A2000_12GB_2026-11-15_cuda13.0](results/NVIDIA_RTX_A2000_12GB_2026-11-15_cuda13.0).
-The same run with CUDA 11.5 (gcc 10.5),
-[results/NVIDIA_RTX_A2000_12GB_2026-11-15_cuda11.5](results/NVIDIA_RTX_A2000_12GB_2026-11-15_cuda11.5),
-is within 2% of these numbers everywhere (CUDA 13 at 0.98–1.02× its throughput), about as much
-as two runs of the same build differ.
+[results/NVIDIA_RTX_A2000_12GB_2026-11-25_cuda13.0](results/NVIDIA_RTX_A2000_12GB_2026-11-25_cuda13.0).
 
-Kernels only (`benchmarkpfb`, T=32): each time is the median of 9 rounds, each round the mean
-of 20 batches. Gsps for 12 ADC channels; DRAM traffic and its share of the nominal 288 GB/s:
+Throughput in Gsps for all 12 ADC channels (real time needs 0.96), T=32, 100 ms batches, each
+figure the mean ± standard deviation over 9 trials:
+
+- **Kernel throughput** (`benchmarkpfb`): the filter bank alone, data already on the GPU, using
+  the path the library picks (fused for M ≤ 64, separate above). Each trial is the mean of 20
+  batches.
+- **Streaming** (`benchmarkpfbio`): including the PCIe copies in both directions, double
+  buffered with batches back to back. Each trial is 20 batches (2 s of signal); all M/2+1 bins
+  copied back, or a quarter of them, (M/2+1)/4 rounded down.
+
+| M | Kernel throughput | Streaming, all bins | Streaming, a quarter of the bins |
+|---:|---:|---:|---:|
+| 8 | 4.69 ± 0.02 (fused) | 2.51 ± 0.00 | 4.45 ± 0.02 (1 bin) |
+| 16 | 8.23 ± 0.01 (fused) | 2.76 ± 0.02 | 7.47 ± 0.02 (2 bins) |
+| 32 | 13.82 ± 0.11 (fused) | 2.95 ± 0.00 | 10.39 ± 0.09 (4 bins) |
+| 50 | 15.87 ± 0.22 (fused) | 2.98 ± 0.00 | 10.46 ± 0.10 (6 bins) |
+| 64 | 19.84 ± 0.24 (fused) | 3.00 ± 0.00 | 10.39 ± 0.02 (8 bins) |
+| 80 | 6.66 ± 0.12 (separate) | 2.87 ± 0.03 | 5.82 ± 0.19 (10 bins) |
+| 128 | 6.27 ± 0.12 (separate) | 2.91 ± 0.00 | 5.70 ± 0.02 (16 bins) |
+| 256 | 7.42 ± 0.25 (separate) | 2.95 ± 0.01 | 6.56 ± 0.11 (32 bins) |
+| 400 | 5.22 ± 0.06 (separate) | 2.91 ± 0.01 | 4.92 ± 0.05 (50 bins) |
+| 512 | 7.26 ± 0.15 (separate) | 2.97 ± 0.01 | 6.61 ± 0.08 (64 bins) |
+| 800 | 4.77 ± 0.10 (separate) | 2.90 ± 0.05 | 4.46 ± 0.02 (100 bins) |
+| 1024 | 7.03 ± 0.19 (separate) | 2.95 ± 0.02 | 6.33 ± 0.02 (128 bins) |
+
+With all bins copied back, streaming levels off near 3 Gsps at every M: the output is about four
+times the input, and the device-to-host copies run at 74–80% of the nominal 31.5 GB/s.
+With a quarter of the bins the two directions carry the same traffic, and the slower of the
+kernels and the PCIe link sets the rate: the fused kernels at M = 32–64 are fast enough for PCIe
+to bind (about 66% of nominal each way), while at small M and on the separate path the
+kernels do. The 9 streaming trials (about 0.6 s each) run back to back, which takes this board to
+its 70 W power limit and lowers its clocks; the kernel trials are short bursts, so where the
+kernels bind, streaming lands somewhat below the kernel figure.
+
+The ± figures are the spread within one run. Between runs the spread is larger: an earlier run the
+same day, started on a cooler board, gave kernel figures 3–5% higher (boost clocks fall as the
+board warms), while the PCIe-bound streaming figures agreed within 1%.
+
+Kernels only, both paths (`benchmarkpfb`), with each path's minimum DRAM traffic at the mean
+throughput and its share of the nominal 288 GB/s:
 
 | M | fused Gsps | DRAM GB/s | % of nominal | separate Gsps | DRAM GB/s | % of nominal |
 |---:|---:|---:|---:|---:|---:|---:|
-| 8 | 4.88 | 59 | 20 | 2.61 | 73 | 25 |
-| 16 | 8.64 | 95 | 33 | 4.18 | 113 | 39 |
-| 32 | 14.40 | 151 | 52 | 5.51 | 146 | 51 |
-| 50 | 16.73 | 173 | 60 | 7.19 | 189 | 66 |
-| 64 | 20.80 | 213 | 74 | 6.55 | 172 | 60 |
-| 80 | | | | 6.81 | 178 | 62 |
-| 128 | | | | 6.53 | 171 | 59 |
-| 256 | | | | 7.65 | 199 | 69 |
-| 400 | | | | 5.51 | 144 | 50 |
-| 500 | | | | 3.79 | 99 | 34 |
-| 512 | | | | 7.58 | 197 | 68 |
-| 800 | | | | 4.97 | 129 | 45 |
-| 1024 | | | | 7.25 | 189 | 66 |
+| 8 | 4.69 ± 0.02 | 56 | 20 | 2.50 ± 0.04 | 70 | 24 |
+| 16 | 8.23 ± 0.01 | 90 | 31 | 4.04 ± 0.01 | 109 | 38 |
+| 32 | 13.82 ± 0.11 | 145 | 50 | 5.36 ± 0.28 | 142 | 49 |
+| 50 | 15.87 ± 0.22 | 164 | 57 | 7.07 ± 0.27 | 186 | 65 |
+| 64 | 19.84 ± 0.24 | 203 | 71 | 6.37 ± 0.33 | 167 | 58 |
+| 80 |  | |  | 6.66 ± 0.12 | 175 | 61 |
+| 128 |  | |  | 6.27 ± 0.12 | 164 | 57 |
+| 256 |  | |  | 7.42 ± 0.25 | 193 | 67 |
+| 400 |  | |  | 5.22 ± 0.06 | 136 | 47 |
+| 512 |  | |  | 7.26 ± 0.15 | 189 | 66 |
+| 800 |  | |  | 4.77 ± 0.10 | 124 | 43 |
+| 1024 |  | |  | 7.03 ± 0.19 | 183 | 64 |
 
-At M=64 the fused kernel is 3.2× faster than the separate path: it moves less data (no frames
-through DRAM), and moves it at 74% of the nominal DRAM bandwidth against 60% for the separate path.
-
-End to end (`benchmarkpfbio`, including PCIe copies; median of 45 batches, wall clock), digitizer
-cards overlapped on separate CUDA streams. PCIe GB/s each way, and the share of the nominal
-31.5 GB/s:
-
-| Build | Bins copied back | Gsps | PCIe in | % | PCIe out | % |
-|---|---:|---:|---:|---:|---:|---:|
-| M=800, T=32 (separate) | all 401 | 2.26 | 4.54 | 14 | 18.16 | 58 |
-| M=800, T=32 (separate) | 100 | 4.04 | 8.11 | 26 | 8.09 | 26 |
-| M=64, T=32 (fused) | all 33 | 2.68 | 5.37 | 17 | 22.13 | 70 |
-| M=64, T=32 (fused) | 8 | 7.57 | 15.14 | 48 | 15.13 | 48 |
-
-Running the cards one after another (serial) gives 17–37% lower throughput; see the logs. With
-all bins copied back, the output is about four times the input, and the device-to-host direction
-is the busier one: 58–70% of nominal. Copying back a quarter of the bins balances the two
-directions.
+At M=64 the fused kernel is 3.1× faster than the separate path: it moves less data (no frames
+through DRAM), and moves it at 71% of the nominal DRAM bandwidth against 58% for the separate path.
 
 ## License
 

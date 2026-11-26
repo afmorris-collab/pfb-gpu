@@ -1,0 +1,27 @@
+NVIDIA RTX A2000 12GB, PCIe gen 4 x16: nominal 31.5 GB/s each way; percentages are of that
+Streaming PFB incl. PCIe, double buffered, T=32, 100 ms batches; 3 digitizer cards x 4 ADC channels at 80 Msps = 0.96 Gsps
+
+M=   8 fused      5 of   5 bins:   38.21 ms ->   2.51 +- 0.00 Gsps for 12 ADC channels, PCIe in  5.03 GB/s (16.0%), out 25.13 GB/s (79.8%) | vs fp64 model: PASS, output OK
+M=   8 fused      1 of   5 bins:   21.59 ms ->   4.45 +- 0.02 Gsps for 12 ADC channels, PCIe in  8.90 GB/s (28.2%), out  8.90 GB/s (28.2%) | vs fp64 model: PASS, output OK
+M=  16 fused      9 of   9 bins:   34.82 ms ->   2.76 +- 0.02 Gsps for 12 ADC channels, PCIe in  5.51 GB/s (17.5%), out 24.82 GB/s (78.8%) | vs fp64 model: PASS, output OK
+M=  16 fused      2 of   9 bins:   12.85 ms ->   7.47 +- 0.02 Gsps for 12 ADC channels, PCIe in 14.95 GB/s (47.4%), out 14.95 GB/s (47.4%) | vs fp64 model: PASS, output OK
+M=  32 fused     17 of  17 bins:   32.58 ms ->   2.95 +- 0.00 Gsps for 12 ADC channels, PCIe in  5.89 GB/s (18.7%), out 25.05 GB/s (79.5%) | vs fp64 model: PASS, output OK
+M=  32 fused      4 of  17 bins:    9.24 ms ->  10.39 +- 0.09 Gsps for 12 ADC channels, PCIe in 20.78 GB/s (65.9%), out 20.77 GB/s (65.9%) | vs fp64 model: PASS, output OK
+M=  50 fused     26 of  26 bins:   32.16 ms ->   2.98 +- 0.00 Gsps for 12 ADC channels, PCIe in  5.97 GB/s (19.0%), out 24.83 GB/s (78.8%) | vs fp64 model: PASS, output OK
+M=  50 fused      6 of  26 bins:    9.18 ms ->  10.46 +- 0.10 Gsps for 12 ADC channels, PCIe in 20.93 GB/s (66.4%), out 20.08 GB/s (63.8%) | vs fp64 model: PASS, output OK
+M=  64 fused     33 of  33 bins:   31.98 ms ->   3.00 +- 0.00 Gsps for 12 ADC channels, PCIe in  6.01 GB/s (19.1%), out 24.77 GB/s (78.6%) | vs fp64 model: PASS, output OK
+M=  64 fused      8 of  33 bins:    9.24 ms ->  10.39 +- 0.02 Gsps for 12 ADC channels, PCIe in 20.79 GB/s (66.0%), out 20.78 GB/s (66.0%) | vs fp64 model: PASS, output OK
+M=  80 separate  41 of  41 bins:   33.46 ms ->   2.87 +- 0.03 Gsps for 12 ADC channels, PCIe in  5.74 GB/s (18.2%), out 23.52 GB/s (74.7%) | vs fp64 model: PASS, output OK
+M=  80 separate  10 of  41 bins:   16.49 ms ->   5.82 +- 0.19 Gsps for 12 ADC channels, PCIe in 11.65 GB/s (37.0%), out 11.64 GB/s (37.0%) | vs fp64 model: PASS, output OK
+M= 128 separate  65 of  65 bins:   32.99 ms ->   2.91 +- 0.00 Gsps for 12 ADC channels, PCIe in  5.82 GB/s (18.5%), out 23.64 GB/s (75.0%) | vs fp64 model: PASS, output OK
+M= 128 separate  16 of  65 bins:   16.86 ms ->   5.70 +- 0.02 Gsps for 12 ADC channels, PCIe in 11.40 GB/s (36.2%), out 11.39 GB/s (36.2%) | vs fp64 model: PASS, output OK
+M= 256 separate 129 of 129 bins:   32.51 ms ->   2.95 +- 0.01 Gsps for 12 ADC channels, PCIe in  5.91 GB/s (18.8%), out 23.80 GB/s (75.5%) | vs fp64 model: PASS, output OK
+M= 256 separate  32 of 129 bins:   14.63 ms ->   6.56 +- 0.11 Gsps for 12 ADC channels, PCIe in 13.13 GB/s (41.7%), out 13.12 GB/s (41.6%) | vs fp64 model: PASS, output OK
+M= 400 separate 201 of 201 bins:   32.97 ms ->   2.91 +- 0.01 Gsps for 12 ADC channels, PCIe in  5.83 GB/s (18.5%), out 23.41 GB/s (74.3%) | vs fp64 model: PASS, output OK
+M= 400 separate  50 of 201 bins:   19.52 ms ->   4.92 +- 0.05 Gsps for 12 ADC channels, PCIe in  9.85 GB/s (31.3%), out  9.84 GB/s (31.2%) | vs fp64 model: PASS, output OK
+M= 512 separate 257 of 257 bins:   32.35 ms ->   2.97 +- 0.01 Gsps for 12 ADC channels, PCIe in  5.95 GB/s (18.9%), out 23.83 GB/s (75.6%) | vs fp64 model: PASS, output OK
+M= 512 separate  64 of 257 bins:   14.51 ms ->   6.61 +- 0.08 Gsps for 12 ADC channels, PCIe in 13.25 GB/s (42.1%), out 13.22 GB/s (42.0%) | vs fp64 model: PASS, output OK
+M= 800 separate 401 of 401 bins:   33.09 ms ->   2.90 +- 0.05 Gsps for 12 ADC channels, PCIe in  5.82 GB/s (18.5%), out 23.27 GB/s (73.9%) | vs fp64 model: PASS, output OK
+M= 800 separate 100 of 401 bins:   21.51 ms ->   4.46 +- 0.02 Gsps for 12 ADC channels, PCIe in  8.96 GB/s (28.4%), out  8.93 GB/s (28.3%) | vs fp64 model: PASS, output OK
+M=1024 separate 513 of 513 bins:   32.45 ms ->   2.95 +- 0.02 Gsps for 12 ADC channels, PCIe in  5.93 GB/s (18.8%), out 23.68 GB/s (75.2%) | vs fp64 model: PASS, output OK
+M=1024 separate 128 of 513 bins:   15.15 ms ->   6.33 +- 0.02 Gsps for 12 ADC channels, PCIe in 12.71 GB/s (40.3%), out 12.65 GB/s (40.2%) | vs fp64 model: PASS, output OK
